@@ -1,8 +1,10 @@
 
-// const inputFile = './input/2005.gse_zassan.txt';
 const inputFile = process.argv[2];
 const outputFile = process.argv[3];
 const logFile = process.argv[4];
+// const inputFile =  './input/5sar_gse.txt';
+// const outputFile =  './output/5sar.json';
+// const logFile =  './logs/logs.logs';
 const sectionTrigger = "EVENT";
 
 
@@ -74,23 +76,26 @@ function processBuffer(buffer, startIndex){
       continue;
     }
 
-   
-    if(isToBeRemoved(k)){
-      // K has already been selected as removed;
-      k += 1;
-      i -= 1;
-    }
-    if(isToBeRemoved(i)){
+    
+    if(isToBeRemoved(i + 1 + startIndex)){
       // Line has already been selected as removed;
       continue;
     }
 
-
-    if(linesToRemove.includes(i + startIndex)){
-      continue;
+    if(isToBeRemoved(k + 1 + startIndex)){
+      // K has already been selected as removed;
+      k += 1;
+      i = 0;
+      if(k === buffer.length){
+        break;
+      }else
+        continue;
     }
+
+
     let first = parseLine(buffer[k], k + startIndex);
     let second = parseLine(buffer[i], i + startIndex);
+    
     if(first.code === second.code){
       //Matching
       logger.info("Matching Set:");
