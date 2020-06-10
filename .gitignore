@@ -1,6 +1,10 @@
 node_modules
 *.log
 input/*
+!input/.gitkeep
 output/*
+!output/.gitkeep
 export/*
+!export/.gitkeep
 logs/*
+!logs/.gitkeep
