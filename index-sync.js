@@ -1,6 +1,8 @@
 
 // const inputFile = './input/2005.gse_zassan.txt';
 const inputFile = process.argv[2];
+const outputFile = process.argv[3];
+const logFile = process.argv[4];
 const sectionTrigger = "EVENT";
 
 
@@ -10,36 +12,34 @@ const logger = winston.createLogger({
   level: 'info',
   format: winston.format.simple(),
   transports: [
-    new winston.transports.File({ filename: 'combined.log' }),
+    new winston.transports.File({ filename: logFile, options: { flags: 'w' } }),
   ],
 });
 
 
-const fs = require('fs'),
-    readline = require('readline');
-
-const rd = readline.createInterface({
-    input: fs.createReadStream(inputFile),
-    console: false
-});
+const fs = require('fs');
 
 var sectionBuffer = [];
 var sectionStartIndex = 0;
-const line_counter = ((i = 0) => () => ++i)();
+
 const linesToRemove = [];
 
 var skipNext = false;
-rd.on('line', (line,  lineno = line_counter()) => {
-  
+
+var array = fs.readFileSync(inputFile).toString().split("\r\n");
+console.log(array.length);
+for(var i = 0; i < array.length; i++){
+  let line = array[i];
+
   if(line.startsWith(sectionTrigger)){
     // EVENT reached
     skipNext = false;
-    sectionStartIndex = lineno;
+    sectionStartIndex = i;
   }
-  if(lineno >= (sectionStartIndex + 9)){
+  if(i >= (sectionStartIndex + 9)){
     if(line.trim() === ""){
       if(skipNext){
-        return;
+        continue;
       }
       skipNext = true;
       processBuffer(sectionBuffer, sectionStartIndex + 9);
@@ -48,24 +48,21 @@ rd.on('line', (line,  lineno = line_counter()) => {
       sectionBuffer.push(line);
     }
   }
-});
+}
 
-rd.on('close', function(){
-  console.log("sectionBuffer:" + sectionBuffer.length);
-  if(sectionBuffer.length > 0){
-    processBuffer(sectionBuffer, sectionStartIndex + 9);
-  }
-  logger.info("INPUT FILE READ COMPLETED");
-  logger.info("----");
-  logger.info("Lines To Remove:");
-  
-  logger.info(JSON.stringify([...new Set(linesToRemove)]));
-  fs.writeFile('./output/ids.json', JSON.stringify({
-    lines: [...new Set(linesToRemove)]
-  }), function(){
-    logger.info("Saved Ids to output/ids.json");
-  })
-});
+console.log("sectionBuffer:" + sectionBuffer.length);
+if(sectionBuffer.length > 0){
+  processBuffer(sectionBuffer, sectionStartIndex + 9);
+}
+logger.info("INPUT FILE READ COMPLETED");
+logger.info("----");
+logger.info("Lines To Remove:");
+
+fs.writeFile(outputFile, JSON.stringify({
+  lines: [...new Set(linesToRemove)]
+}), function(){
+  logger.info("Saved Ids to output/ids.json");
+})
 
 
 function processBuffer(buffer, startIndex){
@@ -115,7 +112,7 @@ function processBuffer(buffer, startIndex){
 
 function addToRemove(line, exclude){
   if(!linesToRemove.includes(exclude)){
-    linesToRemove.push(line.lineno);
+    linesToRemove.push(line.lineno + 1);
   }
 }
 
@@ -123,7 +120,7 @@ function parseLine(line, index){
 	return {
     lineno: index,
     code: line.substr(0, 3) + line.substr(23, 2),
-    value: parseFloat(line.substr(53, 59).trim()),
+    value: parseFloat(line.substr(53, 59).trim().replace(/-/gm, '')),
     is_new: line.substr(0, 4).trim().length === 4
   }
 }

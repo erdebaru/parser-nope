@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "carrier": "^0.3.0",
     "winston": "^3.2.1"
   }
 }

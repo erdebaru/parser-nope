@@ -1,23 +1,22 @@
-const inputFile = './input/2005.gse_zassan.txt';
+const inputFile = process.argv[2];
+const idsFile = process.argv[3]
+const outputFile = process.argv[4];
 
-const fs = require('fs'),
-    readline = require('readline');
+var fs = require('fs');
+const linesno = JSON.parse(fs.readFileSync(idsFile)).lines;
 
-const rd = readline.createInterface({
-    input: fs.createReadStream(inputFile),
-    console: false
-});
+if(fs.existsSync(outputFile))
+  fs.unlinkSync(outputFile);
 
-const linesno = JSON.parse(fs.readFileSync('./output/ids.json')).lines;
 
-const line_counter = ((i = 0) => () => ++i)();
 
-rd.on('line', (line,  lineno = line_counter()) => {
-  if(!linesno.includes(lineno)){
-    fs.appendFileSync('./output/export.txt', line + '\r\n');
-  }
-});
+var array = fs.readFileSync(inputFile).toString().split("\r\n");
+console.log("array before filter:" + array.length);
+for(var i=0; i < linesno.length; i++){
+  array[linesno[i] - 1] = false;
+}
+array = array.filter(a => a);
+console.log("array after filter:" + array.length);
 
-rd.on('close', function(){
-  console.log("FINISHED");
-});
+fs.writeFileSync(outputFile, array.join('\r\n'));
+console.log("done");
