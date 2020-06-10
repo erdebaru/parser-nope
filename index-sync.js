@@ -36,11 +36,13 @@ for(var i = 0; i < array.length; i++){
     skipNext = false;
     sectionStartIndex = i;
   }
+
+  if(skipNext){
+    continue;
+  }
+
   if(i >= (sectionStartIndex + 9)){
-    if(line.trim() === ""){
-      if(skipNext){
-        continue;
-      }
+    if(line.trim() === "" || line.startsWith("STOP")){
       skipNext = true;
       processBuffer(sectionBuffer, sectionStartIndex + 9);
       sectionBuffer = [];
@@ -71,6 +73,19 @@ function processBuffer(buffer, startIndex){
     if(k === i){
       continue;
     }
+
+   
+    if(isToBeRemoved(k)){
+      // K has already been selected as removed;
+      k += 1;
+      i -= 1;
+    }
+    if(isToBeRemoved(i)){
+      // Line has already been selected as removed;
+      continue;
+    }
+
+
     if(linesToRemove.includes(i + startIndex)){
       continue;
     }
@@ -112,13 +127,17 @@ function processBuffer(buffer, startIndex){
 
 function addToRemove(line, exclude){
   if(!linesToRemove.includes(exclude)){
-    linesToRemove.push(line.lineno + 1);
+    linesToRemove.push(line.lineno);
   }
+}
+
+function isToBeRemoved(exclude){
+  return linesToRemove.includes(exclude);
 }
 
 function parseLine(line, index){
 	return {
-    lineno: index,
+    lineno: index + 1,
     code: line.substr(0, 3) + line.substr(23, 2),
     value: parseFloat(line.substr(53, 59).trim().replace(/-/gm, '')),
     is_new: line.substr(0, 4).trim().length === 4
