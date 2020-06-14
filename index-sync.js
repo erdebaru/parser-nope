@@ -143,7 +143,7 @@ function isToBeRemoved(exclude){
 function parseLine(line, index){
   let code = line.substr(0, 8).trim();
   if(code.endsWith("M")){
-    code.substr(0, code.length - 1);
+    code = code.substr(0, code.length - 1);
   }
 	return {
     lineno: index + 1,
