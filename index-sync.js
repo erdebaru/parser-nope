@@ -141,9 +141,13 @@ function isToBeRemoved(exclude){
 }
 
 function parseLine(line, index){
+  let code = line.substr(0, 8).trim();
+  if(code.endsWith("M")){
+    code.substr(0, code.length - 1);
+  }
 	return {
     lineno: index + 1,
-    code: line.substr(0, 3) + line.substr(23, 2),
+    code: code + line.substr(23, 2),
     value: parseFloat(line.substr(53, 59).trim().replace(/-/gm, '')),
     is_new: line.substr(0, 4).trim().length === 4
   }
